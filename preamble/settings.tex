@@ -1,0 +1,51 @@
+\frenchspacing
+\setcounter{MaxMatrixCols}{40}
+
+\gdef\LectureName{}
+
+\setcounter{tocdepth}{2}
+\AtBeginDocument{\newcommand{\BigHeader}[3]{%
+	\thispagestyle{plain}
+	\begin{center}
+	\textbf{\Huge #1} \\
+	\vspace{1.5em}
+	\textbf{\large #2} \\
+	\vspace{0.5em}
+	\textbf{\large #3} \\
+	\vspace{0.5em}
+	{Собрано: \today~\currenttime} \\
+	\end{center}
+
+	\gdef\LectureName{#1}
+
+    \hrulefill
+
+    {
+    \let\clearpage\relax
+    %\tableofcontents
+    }
+    %\clearpage
+}}
+
+\setlength{\headheight}{15pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+
+\fancyhead{}
+\fancyfoot{}
+
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+\renewcommand{\sectionmark}[1]{\markboth{#1}{}}
+
+\fancyfoot[LH]{\LectureName}
+\fancyfoot[LF]{МФТИ ФИВТ'20}
+\fancyfoot[RH]{\nouppercase{\leftmark}}
+\fancyfoot[C]{\thepage~из~\pageref*{LastPage}}
+\makeatletter
+\fancyfoot[RF]{\normalsize\rmfamily\@ifundefined{currentauthor}{}{Автор: \currentauthor}}
+\makeatother
+
+\newcommand{\setauthor}[1]{\gdef\currentauthor{#1}}

@@ -1,0 +1,114 @@
+% Стрелочки
+\def\la{\leftarrow} % <--
+\def\ra{\rightarrow} % -->
+\def\lra{\leftrightarrow} % <-->
+\def\La{\Leftarrow} % <=
+\def\Ra{\Rightarrow} % =>
+\def\Lra{\Leftrightarrow} % <=>
+
+\def\lrh{\leftrightharpoons}
+\def\btu{\bigtriangleup}
+
+% Множества чисел
+\def\N{\mathbb{N}}
+\def\Z{\mathbb{Z}}
+\def\Q{\mathbb{Q}}
+\def\R{\mathbb{R}}
+\def\C{\mathbb{C}}
+\def\H{\mathbb{H}}
+
+\def\LraDef{\stackrel{\mathrm{Def}}{\Lra}}
+\def\eqDef{\stackrel{\mathrm{Def}}{=}}
+
+% Меньше или равно, больше или равно
+\renewcommand{\le}{\leqslant}
+\renewcommand{\ge}{\geqslant}
+\renewcommand{\leq}{\leqslant}
+\renewcommand{\geq}{\geqslant}
+
+% Математические операторы
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\Int}{int}
+\DeclareMathOperator{\cl}{cl}
+\DeclareMathOperator{\diam}{diam}
+\DeclareMathOperator{\Dom}{Dom}
+\DeclareMathOperator{\coDom}{coDom}
+\DeclareMathOperator{\Char}{char}
+\DeclareMathOperator{\Arg}{Arg}
+\DeclareMathOperator{\grad}{grad}
+\DeclareMathOperator{\rot}{rot}
+\DeclareMathOperator{\divergence}{div}
+\DeclareMathOperator{\rang}{rang}
+\DeclareMathOperator{\End}{End}
+\DeclareMathOperator{\Ann}{Ann}
+\AtBeginDocument{\let\Re\relax}
+\AtBeginDocument{\newcommand{\Re}{\mathop{\mathrm{Re}}\nolimits}}
+\AtBeginDocument{\let\Im\relax}
+\AtBeginDocument{\newcommand{\Im}{\mathop{\mathrm{Im}}\nolimits}}
+\newcommand{\emod}[1]{\mathop{\equiv}\limits_{#1}}
+\newcommand{\Choose}[2]{{\left(#1 \atop #2\right)}}
+
+\newcommand{\partd}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\partdd}[3]{\frac{\partial^2 #1}{\partial #2\partial #3}}
+
+\let\emptyset\varnothing % красивый emptyset
+\newcommand{\eps}{\varepsilon} % красивый epsilon
+\newcommand{\sfrac}[2]{{\scriptstyle\frac{#1}{#2}}} % маленькая дробь
+\renewcommand{\O}{\mathcal{O}} % O-большое
+
+% Мелочи
+\newcommand{\q}[1]{\langle #1 \rangle} % треугольные скобки
+\newcommand{\URL}[1]{{\footnotesize{\url{#1}}}} % кликабельная ссылка
+
+% Отступы
+\def\makeparindent{\hspace*{\parindent}}
+\def\up{\vspace*{-\baselineskip}}
+\def\down{\vspace*{\baselineskip}}
+\def\LINE{\vspace*{-1em}\noindent \underline{\hbox to 1\textwidth{{ } \hfil{ } \hfil{ } }}}
+
+% Код с правильными отступами
+\newenvironment{code}{
+  \VerbatimEnvironment
+
+  \vspace{-0.8em}
+  \begin{minted}{c++}}{
+  \end{minted}
+  \vspace{-0.8em}
+}
+
+% Формула с правильными отступами
+\newenvironment{formula}{
+ 
+  \vspace{-1.0em}
+}{
+  \vspace{-1.7em}
+ 
+}
+
+\theoremstyle{definition}
+\newtheorem{theorem}{Теорема}[section]
+\newtheorem{assertion}{Утверждение}[section]
+\newtheorem{lemma}{Лемма}[section]
+
+\newtheorem{Def}{$\mathfrak{Def}$}[section]
+
+\theoremstyle{remark}
+\newtheorem{conseq}{Следствие}[theorem]
+\newtheorem{conseq*}{Следствие}
+\newtheorem{Rem}{Замечание}[section]
+\newtheorem{exmp}{Пример}[section]
+\newtheorem{Exercise}{Упражнение}[section]
+
+\newcommand{\proofbegin}{$\blacktriangleright$}
+\newcommand{\proofend}{$\blacktriangleleft$}
+
+% http://tex.stackexchange.com/a/67740
+\renewenvironment{proof}{%
+	\begin{adjustwidth}{0pt}{\widthof{\proofend}}%
+	\begin{description}[labelwidth=\widthof{\proofbegin},leftmargin=!]%
+	\item[\proofbegin]%
+}{%
+    \hfill\makebox[0pt][l]{\proofend} 
+	\end{description}%
+	\end{adjustwidth}%
+}
