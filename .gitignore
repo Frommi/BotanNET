@@ -95,4 +95,6 @@ ENV/
 *.out
 *.run.xml
 *.synctex.gz
+_minted-AT
 _minted-sql
+*.tex
