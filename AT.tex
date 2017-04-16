@@ -29,6 +29,7 @@
 \item Группы "--- учебные группы. Сюда входят как и группы типа ``696'', так и ``продвинутый поток по программированию''.
 \item Проекты "--- задания, заданные группе. Например, лабораторная по БД.
 \item Таски "--- отдельная задача в задании.
+\item Комментарии к таскам "--- юзеры могут комментировать таски.
 \end{enumerate}
 
 \section{User Stories}
@@ -42,6 +43,8 @@
 \item Поиск юзеров, выполнившее или не выполнившие определенные таски по шаблону.
 \item Фильтрация результата поиска по группе, этажу, факультету, курсу.
 \item Отметка ``не беспокоить'' на таск "--- запретить другим юзерам показывать в запросе с этим таском.
+\item Открытие всех комментариев к конкретному таску в хронологическом порядке.
+\item Добавление своего комментария в конец списка комментариев для таска.
 \end{enumerate}
 \newpage
 Для админа группы:
@@ -57,41 +60,36 @@
 \begin{enumerate}
 \item \texttt{Users}
     \begin{enumerate}
-    \item \texttt{user\_id, int}
-    \item \texttt{user\_name, str}
-    \item \texttt{department, str}
+    \item \texttt{user\_id, serial}
+    \item \texttt{user\_name, varchar(50)}
+    \item \texttt{department, varchar(30)}
     \item \texttt{dorm\_number, int}
     \item \texttt{group\_number, int}
     \end{enumerate}
 \item Groups
     \begin{enumerate}
-    \item \texttt{group\_id, int}
-    \item \texttt{group\_name, str}
-    \item \texttt{teacher\_name, str}
+    \item \texttt{group\_id, serial}
+    \item \texttt{group\_name, varchar(50)}
+    \item \texttt{teacher\_name, varchar(100)}
     \end{enumerate}
 \item Projects
     \begin{enumerate}
-    \item \texttt{project\_id, int}
-    \item \texttt{project\_name, str}
-    \item \texttt{project\_info, str}
-    \item \texttt{deadline, date}
+    \item \texttt{project\_id, serial}
+    \item \texttt{group\_id, int}
+    \item \texttt{project\_name, varchar(50)}
+    \item \texttt{project\_info, text}
+    \item \texttt{deadline, timestamp}
     \end{enumerate}
 \item Tasks
     \begin{enumerate}
-    \item \texttt{task\_id, int}
-    \item \texttt{task\_name, str}
-    \item \texttt{task\_info, str}
+    \item \texttt{task\_id, serial}
+    \item \texttt{task\_info, text}
     \end{enumerate}
 \item UserGroups
     \begin{enumerate}
     \item \texttt{user\_id, int}
     \item \texttt{group\_id, int}
     \item \texttt{is\_admin, bool}
-    \end{enumerate}
-\item GroupProjects
-    \begin{enumerate}
-    \item \texttt{group\_id, int}
-    \item \texttt{project\_id, int}
     \end{enumerate}
 \item ProjectTasks
     \begin{enumerate}
@@ -104,6 +102,13 @@
     \item \texttt{task\_id, int}
     \item \texttt{is\_done, bool}
     \item \texttt{is\_hidden, bool}
+    \end{enumerate}
+\item Comments
+    \begin{enumerate}
+    \item \texttt{task\_id, int}
+    \item \texttt{comment\_no, int}
+    \item \texttt{user\_id, int}
+    \item \texttt{comment\_text, text}
     \end{enumerate}
 \end{enumerate}
 
