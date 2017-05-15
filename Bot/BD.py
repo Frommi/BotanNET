@@ -19,8 +19,8 @@ def get_project_id(cursor, project_name):
         return records[0]
     return None
 
-def get_task_id(cursor, task_name):
-    cursor.execute("""SELECT task_id FROM tasks WHERE task_name = %s;""", [task_name])
+def get_task_id(cursor, task_info):
+    cursor.execute("""SELECT task_id FROM tasks WHERE task_info = %s;""", [task_info])
     records = cursor.fetchall()
     if records:
         return records[0]
@@ -53,7 +53,7 @@ def create_group(cursor, user_id, group_name, group_info=None):
     if get_group_id(cursor, group_name) is not None:
         raise GroupAlreadyExistsException()
 
-    cursor.execute("""INSERT INTO groups VALUES (%s, %s, %s);""", ["DEFAULT", group_name, group_info])
+    cursor.execute("""INSERT INTO groups VALUES (DEFAULT, %s, %s) RETURNING group_id;""", [group_name, group_info])
     group_id = cursor.fetchone()[0]
 
     cursor.execute("""INSERT INTO user_groups VALUES (%s, %s, %s);""", [group_id, user_id, True])
@@ -68,7 +68,7 @@ def delete_group(cursor, user_id, group_name):
     cursor.execute("""DELETE FROM user_groups WHERE group_id = %s;""", [group_id])
 
 
-def create_project(cursor, user_id, project_name, group_name, project_info=None, deadline=None):
+def create_project(cursor, user_id, project_name, group_name, project_info=None):
     if get_project_id(cursor, project_name) is not None:
         raise ProjectAlreadyExistsException()
 
@@ -76,41 +76,34 @@ def create_project(cursor, user_id, project_name, group_name, project_info=None,
     if group_id is None:
         raise GroupNotExistsException()
 
-    cursor.execute("""INSERT INTO projects VALUES (%s, %s, %s, %s, %s);""",
-        ["DEFAULT", project_name, group_id, project_info, deadline])
-
-
+    cursor.execute("""INSERT INTO projects VALUES (DEFAULT, %s, %s, %s);""",
+        [project_name, group_id, project_info])
 
 def delete_project(cursor, user_id, project_name):
     project_id = get_project_id(cursor, project_name)
     if project_id is None:
         raise ProjectNotExistsException()
 
-    cursor.execute("""DELETE FROM projects      WHERE project_id = %s;""", [project_id])
-    cursor.execute("""DELETE FROM project_tasks WHERE project_id = %s;""", [project_id])
+    cursor.execute("""DELETE FROM projects WHERE project_id = %s;""", [project_id])
 
 
-def create_task(cursor, user_id, task_name, project_name):
-    if get_task_id(cursor, task_name) is not None:
+def create_task(cursor, user_id, task_info, project_name):
+    if get_task_id(cursor, task_info) is not None:
         raise TaskAlreadyExistsException()
 
     project_id = get_project_id(cursor, project_name)
     if project_id is None:
         raise ProjectNotExistsException()
 
-    cursor.execute("""INSERT INTO tasks VALUES (%s, %s, %s);""", ["DEFAULT", group_name, group_info])
-    task_id = cursor.fetchone()[0]
+    cursor.execute("""INSERT INTO tasks VALUES (DEFAULT, %s, %s);""", [task_info, project_id])
 
-    cursor.execute("""INSERT INTO project_tasks VALUES (%s, %s);""", [project_id, task_id])
-
-def delete_task(cursor, user_id, task_name):
-    task_id = get_task_id(cursor, task_name)
+def delete_task(cursor, user_id, task_info):
+    task_id = get_task_id(cursor, task_info)
     if task_id is None:
         raise TaskNotExistsException()
 
     cursor.execute("""DELETE FROM tasks         WHERE task_id = %s;""", [task_id])
     cursor.execute("""DELETE FROM user_tasks    WHERE task_id = %s;""", [task_id])
-    cursor.execute("""DELETE FROM project_tasks WHERE task_id = %s;""", [task_id])
 
 
 def join_user(cursor, user_id, group_name, admin_id):
@@ -122,7 +115,7 @@ def join_user(cursor, user_id, group_name, admin_id):
         if not is_admin(cursor, admin_id, group_id):
             raise UserIsNotAdmin()
 
-    cursor.execute("""INSERT INTO user_groups VALUES (%s, %s);""", [group_id, user_id, False])
+    cursor.execute("""INSERT INTO user_groups VALUES (%s, %s, %s);""", [group_id, user_id, False])
 
 def unjoin_user(cursor, user_id, group_name, admin_id):
     group_id = get_group_id(cursor, group_name)
@@ -138,8 +131,8 @@ def unjoin_user(cursor, user_id, group_name, admin_id):
 
 #task_done and task_hide - это булевские переменные
 #В случае если какая-нибудь из них равна None, значение этой переменнной изменять не требуется
-def set_task(cursor, user_id, task_name, task_done, task_hide):
-    task_id = get_task_id(cursor, task_name)
+def set_task(cursor, user_id, task_info, task_done, task_hide):
+    task_id = get_task_id(cursor, task_info)
     if task_id is None:
         raise TaskNotExistsException()
 
