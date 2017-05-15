@@ -1,48 +1,4 @@
-from collections import defaultdict
-
-
-chats_current_place = defaultdict(lambda: ("None", "None"))
-
-
-class BotanException(Exception):
-    pass
-
-
-class ElemNotExistsException(BotanException):
-    pass
-
-class UserNotExistsException(ElemNotExistsException):
-    pass
-
-class GroupNotExistsException(ElemNotExistsException):
-    pass
-
-class ProjectNotExistsException(ElemNotExistsException):
-    pass
-
-class TaskNotExistsException(ElemNotExistsException):
-    pass
-
-
-class ElemAlreadyExistsException(BotanException):
-    pass
-
-class UserAlreadyExistsException(ElemAlreadyExistsException):
-    pass
-
-class GroupAlreadyExistsException(ElemAlreadyExistsException):
-    pass
-
-class ProjectAlreadyExistsException(ElemAlreadyExistsException):
-    pass
-
-class TaskAlreadyExistsException(ElemAlreadyExistsException):
-    pass
-
-
-class UserIsNotAdmin(BotanException):
-    pass
-
+from util import *
 
 def has_user(cursor, user_id):
     cursor.execute("""SELECT user_id FROM users WHERE user_id = %s;""", [user_id])
@@ -120,8 +76,10 @@ def create_project(cursor, user_id, project_name, group_name, project_info=None,
     if group_id is None:
         raise GroupNotExistsException()
 
-    cursor.execute("""INSERT INTO projects VALUES (%s, %s, %s, %s, %s);""", 
+    cursor.execute("""INSERT INTO projects VALUES (%s, %s, %s, %s, %s);""",
         ["DEFAULT", project_name, group_id, project_info, deadline])
+
+
 
 def delete_project(cursor, user_id, project_name):
     project_id = get_project_id(cursor, project_name)
@@ -155,7 +113,7 @@ def delete_task(cursor, user_id, task_name):
     cursor.execute("""DELETE FROM project_tasks WHERE task_id = %s;""", [task_id])
 
 
-def join_user(cursor, user_id, group_name, admin_id=None):
+def join_user(cursor, user_id, group_name, admin_id):
     group_id = get_group_id(cursor, group_name)
     if group_id is None:
         raise GroupNotExistsException()
@@ -166,7 +124,7 @@ def join_user(cursor, user_id, group_name, admin_id=None):
 
     cursor.execute("""INSERT INTO user_groups VALUES (%s, %s);""", [group_id, user_id, False])
 
-def unjoin_user(cursor, user_id, group_name, admin_id=None):
+def unjoin_user(cursor, user_id, group_name, admin_id):
     group_id = get_group_id(cursor, group_name)
     if group_id is None:
         raise GroupNotExistsException()
@@ -210,3 +168,7 @@ def find_botan(cursor, tasks):
 
     res = [rec[0] for rec in cursor.fetchall()]
     return res
+
+#return admin_id or GroupExistError
+def get_admin(cursor, group_name):
+    pass
