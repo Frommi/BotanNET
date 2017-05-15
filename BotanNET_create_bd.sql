@@ -1,6 +1,7 @@
 CREATE TABLE tasks (
     "task_id" serial NOT NULL,
     "task_info" TEXT NOT NULL,
+    "project_id" integer NOT NULL,
     CONSTRAINT tasks_pk PRIMARY KEY ("task_id")
 ) WITH (
     OIDS=FALSE
@@ -11,7 +12,6 @@ CREATE TABLE projects (
     "project_name" varchar(50) NOT NULL,
     "group_id" integer NOT NULL,
     "project_info" TEXT DEFAULT NULL,
-    "deadline" TIMESTAMP DEFAULT NULL,
     CONSTRAINT projects_pk PRIMARY KEY ("project_id")
 ) WITH (
     OIDS=FALSE
@@ -41,13 +41,6 @@ CREATE TABLE user_groups (
     OIDS=FALSE
 );
 
-CREATE TABLE project_tasks (
-    "project_id" integer NOT NULL,
-    "task_id" integer NOT NULL
-) WITH (
-    OIDS=FALSE
-);
-
 CREATE TABLE user_tasks (
     "user_id" integer NOT NULL,
     "task_id" integer NOT NULL,
@@ -63,11 +56,8 @@ ALTER TABLE projects ADD CONSTRAINT "projects_fk0" FOREIGN KEY ("group_id") REFE
 ALTER TABLE user_groups ADD CONSTRAINT "user_groups_fk0" FOREIGN KEY ("group_id") REFERENCES groups("group_id");
 ALTER TABLE user_groups ADD CONSTRAINT "user_groups_fk1" FOREIGN KEY ("user_id") REFERENCES users("user_id");
 
-ALTER TABLE project_tasks ADD CONSTRAINT "project_tasks_fk0" FOREIGN KEY ("project_id") REFERENCES projects("project_id");
-ALTER TABLE project_tasks ADD CONSTRAINT "project_tasks_fk1" FOREIGN KEY ("task_id") REFERENCES tasks("task_id");
+ALTER TABLE tasks ADD CONSTRAINT "tasks_fk0" FOREIGN KEY ("project_id") REFERENCES projects("project_id");
 
 ALTER TABLE user_tasks ADD CONSTRAINT "user_tasks_fk0" FOREIGN KEY ("user_id") REFERENCES users("user_id");
 ALTER TABLE user_tasks ADD CONSTRAINT "user_tasks_fk1" FOREIGN KEY ("task_id") REFERENCES tasks("task_id");
 
-
-CREATE INDEX deadline_index ON projects(deadline);
