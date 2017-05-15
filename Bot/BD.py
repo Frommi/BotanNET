@@ -1,36 +1,45 @@
-from util import *
+from util import ElemNotExistsException,\
+    UserNotExistsException,\
+    GroupNotExistsException,\
+    ProjectNotExistsException,\
+    TaskNotExistsException,\
+    ElemAlreadyExistsException,\
+    UserAlreadyExistsException,\
+    GroupAlreadyExistsException,\
+    ProjectAlreadyExistsException,\
+    TaskAlreadyExistsException,\
+    UserHasNotTask,\
+    UserIsNotAdmin
 
 def has_user(cursor, user_id):
     cursor.execute("""SELECT user_id FROM users WHERE user_id = %s;""", [user_id])
-    records = cursor.fetchall()
+    records = cursor.fetchone()
     return bool(records)
 
 def get_group_id(cursor, group_name):
     cursor.execute("""SELECT group_id FROM groups WHERE group_name = %s;""", [group_name])
-    records = cursor.fetchall()
+    records = cursor.fetchone()
     if records:
         return records[0]
     return None
 
 def get_project_id(cursor, project_name):
     cursor.execute("""SELECT project_id FROM projects WHERE project_name = %s;""", [project_name])
-    records = cursor.fetchall()
+    records = cursor.fetchone()
     if records:
         return records[0]
     return None
 
 def get_task_id(cursor, task_info):
     cursor.execute("""SELECT task_id FROM tasks WHERE task_info = %s;""", [task_info])
-    records = cursor.fetchall()
+    records = cursor.fetchone()
     if records:
         return records[0]
     return None
 
 def is_admin(cursor, user_id, group_id):
     cursor.execute("""SELECT is_admin FROM user_groups WHERE user_id = %s AND group_id = %s;""", [user_id, group_id])
-    records = cursor.fetchall()
-    if records is None:
-        return False
+    records = cursor.fetchone()
     return records[0]
 
 
@@ -63,9 +72,13 @@ def delete_group(cursor, user_id, group_name):
     if group_id is None:
         raise GroupNotExistsException()
 
-    cursor.execute("""DELETE FROM groups      WHERE group_id = %s;""", [group_id])
+    admin_id = get_admin(cursor, group_name)
+    if admin_id != user_id:
+        raise UserIsNotAdmin()
+
     cursor.execute("""DELETE FROM projects    WHERE group_id = %s;""", [group_id])
     cursor.execute("""DELETE FROM user_groups WHERE group_id = %s;""", [group_id])
+    cursor.execute("""DELETE FROM groups      WHERE group_id = %s;""", [group_id])
 
 
 def create_project(cursor, user_id, project_name, group_name, project_info=None):
@@ -102,8 +115,8 @@ def delete_task(cursor, user_id, task_info):
     if task_id is None:
         raise TaskNotExistsException()
 
-    cursor.execute("""DELETE FROM tasks         WHERE task_id = %s;""", [task_id])
     cursor.execute("""DELETE FROM user_tasks    WHERE task_id = %s;""", [task_id])
+    cursor.execute("""DELETE FROM tasks         WHERE task_id = %s;""", [task_id])
 
 
 def join_user(cursor, user_id, group_name, admin_id):
@@ -122,9 +135,11 @@ def unjoin_user(cursor, user_id, group_name, admin_id):
     if group_id is None:
         raise GroupNotExistsException()
 
-    if admin_id is not None:
-        if not is_admin(cursor, admin_id, group_id):
-            raise UserIsNotAdmin()
+    if not is_admin(cursor, admin_id, group_id):
+        raise UserIsNotAdmin()
+
+    if user_id == admin_id:
+        delete_group(cursor, admin_id, group_name)
 
     cursor.execute("""DELETE FROM user_groups WHERE user_id = %s AND group_id = %s;""", [user_id, group_id])
 
@@ -143,25 +158,46 @@ def set_task(cursor, user_id, task_info, task_done, task_hide):
 #возвращает list из первых ста
 #tasks - list из кортежей (task_id, task_must be done)
 def find_botan(cursor, tasks):
-    done_tasks = [task[0] for task in tasks if task[1]]
-    not_done_tasks = [task[0] for task in tasks if not task[1]]
+    done_tasks = [task[0][0] for task in tasks if task[1]]
+    print(done_tasks)
+    not_done_tasks = [task[0][0] for task in tasks if not task[1]]
+    print(not_done_tasks)
+
     cursor.execute("""
-        (
-            SELECT user_id FROM user_tasks
-            WHERE is_done = TRUE AND is_hidden = FALSE AND task_id IN (%s)
-            GROUP BY user_id
-            HAVING COUNT(*) = %s
-        ) INTERSECT (
-            SELECT user_id FROM user_tasks
-            WHERE is_done = FALSE AND is_hidden = FALSE AND task_id IN (%s)
-            GROUP BY user_id
-            HAVING COUNT(*) = %s
-        );
-    """, [done_tasks, len(done_tasks), not_done_tasks, len(not_done_tasks)])
+        SELECT user_id FROM users
+        WHERE %s <@ ARRAY(
+            SELECT task_id FROM user_tasks
+            WHERE users.user_id = user_tasks.user_id AND
+                user_tasks.is_hidden = FALSE AND
+                user_tasks.is_done = TRUE 
+        )
+    """, [done_tasks])
+
+    # cursor.execute("""
+    #     WITH user_tasks_and_null AS (
+    #         SELECT users.user_id, task_id, is_hidden, is_done 
+    #         FROM users LEFT OUTER JOIN user_tasks
+    #         ON (users.user_id = user_tasks.user_id)
+    #     )
+
+    #     (
+    #         SELECT user_id
+    #         FROM (
+    #             SELECT user_id, (is_done = TRUE AND is_hidden = FALSE AND task_id = ANY(%s)) AS flag
+    #             FROM user_tasks_and_null
+    #         ) AS flagged_done
+    #         GROUP BY user_id
+    #         HAVING SUM(flag::integer) = %s
+    #     )
+    # """, [done_tasks, len(done_tasks)])
 
     res = [rec[0] for rec in cursor.fetchall()]
     return res
 
-#return admin_id or GroupExistError
 def get_admin(cursor, group_name):
-    pass
+    group_id = get_group_id(cursor, group_name)
+    if group_id is None:
+        raise GroupNotExistsException()
+
+    cursor.execute("""SELECT user_id FROM user_groups WHERE is_admin = TRUE AND group_id = %s;""", [group_id])
+    return cursor.fetchone()[0]

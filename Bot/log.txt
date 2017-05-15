@@ -1,0 +1,3 @@
+Connecting to database
+ ->host='localhost' dbname='botannet' user='postgres' password='secret'
+Connected!

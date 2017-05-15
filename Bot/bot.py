@@ -1,5 +1,6 @@
 from telegram.ext import Updater
-from BotCommand import handlers 
+import BotCommand
+import util
 
 import logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -9,6 +10,9 @@ logging.getLogger().setLevel(logging.DEBUG)
 
 
 def main():
+    util.init_BD()
+    print(util.cursor)
+
     fkey = open('key.txt', "r")
     skey = fkey.readline()
     fkey.close()
@@ -16,7 +20,7 @@ def main():
     updater = Updater(token=skey)
     dispatcher = updater.dispatcher
 
-    for i in handlers:
+    for i in BotCommand.handlers:
         dispatcher.add_handler(i)
     updater.start_polling()
 

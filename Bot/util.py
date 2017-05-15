@@ -1,21 +1,11 @@
-from collections import defaultdict
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, ConversationHandler, CallbackQueryHandler
-from enum import Enum
 import answers
+import psycopg2
 
 #нужное подставить
-cursor = []
-
-#first is group, second is project
-#chats_current_place = defaultdict(lambda: ("None", "None"))
-
-
-class UserType(Enum):
-    NO_USER = 0
-    USER = 1
-    ADMIN = 2
-
+cursor = None
+conn = None
 
 
 class BotanException(Exception):
@@ -59,7 +49,14 @@ class UserHasNotTask(BotanException):
 class UserIsNotAdmin(BotanException):
     pass
 
+def init_BD():
+    global cursor, conn
 
+    conn_string = "host='localhost' dbname='botannet' user='postgres' password='secret'"
+    print("Connecting to database\n ->%s" % (conn_string))
+    conn = psycopg2.connect(conn_string)
+    cursor = conn.cursor()
+    print("Connected!")
 
 def get_user_id(update):
     return update.message.from_user.id

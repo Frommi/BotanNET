@@ -4,11 +4,7 @@ import BD
 from group_func import group_handlers
 from project_func import project_handlers
 from task_func import task_handlers
-
-
-
 import util
-
 
 #from util import chats_current_place, UserType
 
@@ -17,7 +13,7 @@ import util
 def start(bot, update):
     chat_id = update.message.chat_id
     try:
-        BD.create_user(util.cursor, util.get_user_id(update))
+        BD.create_user(util.cursor, update.message.from_user.id)
         bot.send_message(chat_id=chat_id, text="Привет, теперь вы с нами, в BotanNET!!")
     except util.UserAlreadyExistsException:
         bot.send_message(chat_id=chat_id, text="Вы уже в BotanNET")
@@ -27,6 +23,11 @@ def start(bot, update):
 def help(bot, update):
     bot.send_message(chat_id=update.message.chat_id, text="help'а нет, но вы держитесь")
 
+
+
+def commit(bot, update):
+    util.conn.commit()
+    bot.send_message(chat_id=update.message.chat_id, text="Закоммители успешно!")
 
 # def current_place(bot, update):
 #     chat_id = update.message.chat_id
@@ -60,12 +61,13 @@ def confim_button(bot, update):
                         chat_id=query.message.chat_id,
                         message_id=query.message.message_id)
     if query == 'Пока':
-        BD.delete_user(util.cursor, util.get_user_id(update))
+        BD.delete_user(util.cursor, update.message.from_user.id)
 
 
 handlers = (
     CommandHandler(start.__name__, start),
     CommandHandler(help.__name__, help),
+    CommandHandler(commit.__name__, commit),
     #CommandHandler(current_place.__name__, current_place),
     #CommandHandler(set_current_place.__name__, set_current_place, pass_args=True),
     CommandHandler(quit.__name__, quit),
